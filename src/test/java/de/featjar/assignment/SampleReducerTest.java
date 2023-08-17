@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,10 +18,13 @@ import de.featjar.base.computation.IComputation;
 import de.featjar.base.io.IO;
 import de.featjar.formula.analysis.SampleReducer2;
 import de.featjar.formula.analysis.VariableMap;
+import de.featjar.formula.analysis.bool.BooleanAssignment;
+import de.featjar.formula.analysis.bool.BooleanAssignmentList;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
 import de.featjar.formula.analysis.bool.BooleanRepresentationComputation;
 import de.featjar.formula.analysis.bool.BooleanSolution;
 import de.featjar.formula.analysis.bool.BooleanSolutionList;
+import de.featjar.formula.analysis.combinations.LexicographicIterator;
 import de.featjar.formula.analysis.sat4j.twise.CoverageStatistic;
 import de.featjar.formula.analysis.sat4j.twise.TWiseStatisticGenerator;
 import de.featjar.formula.io.FormulaFormats;
@@ -34,6 +38,7 @@ public class SampleReducerTest {
 
     public static void main(String[] args) {
     	BooleanSolutionList fieldVariants = new BooleanSolutionList();
+    	BooleanSolutionList finalFieldVariants = new BooleanSolutionList();
 
         IFormula formula = IO.load(
                         Paths.get(
@@ -48,39 +53,38 @@ public class SampleReducerTest {
                 .map(ComputeNNFFormula::new)
                 .map(ComputeCNFFormula::new)
                 .map(BooleanRepresentationComputation::new);
-        IComputation<BooleanClauseList> clauses = cnf.map(Computations::getKey);
+        BooleanClauseList clauses = cnf.map(Computations::getKey).computeResult().get();
         
         VariableMap features = Computations.await((IComputation<VariableMap>) cnf.map(Computations::getValue));
         
         fieldVariants.addAll(getFieldVariants(features, "/home/rahel/Dokumente/Repositories/soletta-case-study/020_samples/2015/2015-06-26_18-38-56/random/0"));
         fieldVariants.addAll(getFieldVariants(features, "/home/rahel/Dokumente/Repositories/soletta-case-study/020_samples/2015/2015-06-26_18-38-56/random/0"));
-//
-//        //        BooleanSolutionList sample = await(clauses.map(AllConfigurationGenerator::new));
-//        BooleanSolutionList sample = await(clauses.map(YASA::new).set(YASA.T, t));
 
-        checkCoverage(t, clauses, fieldVariants);
+        //        BooleanSolutionList sample = await(clauses.map(YASA::new).set(YASA.T, t));
+        
+        System.out.println("Base sample");
+        
+        for(Iterator<BooleanSolution> iterator = fieldVariants.getAll().iterator(); iterator.hasNext();) {
+        	BooleanSolution inter = iterator.next();
+        	int[] array = new int[inter.size()];
+        	for(int i = 0; i < inter.size(); i++) {
+        		if(inter.get(i) == 0) {
+        			array[i] = -(i+1);
+        		} else {
+        			array[i] = i+1;
+        		}
+        	}
+        	finalFieldVariants.add(new BooleanSolution(array));
+        }
+        
+        checkCoverage(t, Computations.of(clauses) , finalFieldVariants);
 
+        System.out.println("reduced sample");
         SampleReducer2 reducer = new SampleReducer2();
-        List<BooleanSolution> reducedSample = reducer.reduce(null, fieldVariants.getAll(), t);
+        List<BooleanSolution> reducedSample = reducer.reduce(null, finalFieldVariants.getAll(), t);
         BooleanSolutionList reducedFieldVariants = new BooleanSolutionList(reducedSample);
-        checkCoverage(t, clauses, reducedFieldVariants);
+        checkCoverage(t, Computations.of(clauses), reducedFieldVariants);
 
-//        System.out.println(reducedSample.size());
-
-        //        Logger.logInfo("Reduce...");
-        //        long start = System.currentTimeMillis();
-        //        List<LiteralList> reducedSample = SampleReducer.reduce(sample, t);
-        //        long end = System.currentTimeMillis();
-        //
-        //        Logger.logInfo("Time: " + ((end - start) / 1000.0));
-        //
-        //        Collections.sort(solutionList1, Comparator.comparing(LiteralList::toString));
-        //        Collections.sort(reducedSample, Comparator.comparing(LiteralList::toString));
-        //
-        //        System.out.println(solutionList1.size());
-        ////        solutionList1.forEach(l -> System.out.println(l.toString()));
-        //        System.out.println(reducedSample.size());
-        ////        reducedSample.forEach(l -> System.out.println(l.toString()));
     }
 
 	private static ArrayList<BooleanSolution> getFieldVariants(VariableMap features, String fieldVariantsFolder) {
@@ -113,11 +117,43 @@ public class SampleReducerTest {
 	}
 
 	private static void checkCoverage(int t, IComputation<BooleanClauseList> clauses, BooleanSolutionList sample) {
-        CoverageStatistic statistic = await(clauses.map(TWiseStatisticGenerator::new)
-                .set(TWiseStatisticGenerator.SAMPLE, sample)
-                .set(TWiseStatisticGenerator.T, t));
-        System.out.println(sample.size());
-        System.out.println(statistic.coverage());
+//        CoverageStatistic statistic = clauses.map(TWiseStatisticGenerator::new)
+//                .set(TWiseStatisticGenerator.SAMPLE, sample)
+//                .set(TWiseStatisticGenerator.T, t).set(TWiseStatisticGenerator.CORE, new BooleanAssignment()).computeResult(false, false).get();
+		long count = LexicographicIterator.<Void>stream(t, sample.get(0).get().size() * 2).map(interaction -> {int[] array = new int[2];
+		array[0] = interaction.elementIndices[0] > sample.get(0).get().size() - 1 ? -(interaction.elementIndices[0] - sample.get(0).get().size() + 1) : interaction.elementIndices[0]+1;
+		array[1] = interaction.elementIndices[1] > sample.get(0).get().size() - 1 ? -(interaction.elementIndices[1] - sample.get(0).get().size() + 1) : interaction.elementIndices[1]+1; return array;})
+    			.filter(interaction -> {
+    		
+        	for(BooleanSolution config : sample) {
+        		if(((interaction[0] < 0 && config.get(-interaction[0]-1) == interaction[0]) || (interaction[0] > 0 && config.get(interaction[0]-1) == interaction[0])) && 
+        				((interaction[1] < 0 && config.get(-interaction[1]-1) == interaction[1]) || (interaction[1] > 0 && config.get(interaction[1]-1) == interaction[1]))) {
+        			return true;
+        		}
+        	}
+        	
+        	//TODO: valide? Solver aufrufen! dann ist es noch ne extra interaction (um am ende coverage raus zu finden)
+        	return false;
+    	})
+    			.count();	
+		System.out.println("Sample size:" + sample.size());
+        System.out.println("Sample coverage:" + count);
 //        assertEquals(1.0, statistic.coverage());
     }
+	
+
+    //        Logger.logInfo("Reduce...");
+    //        long start = System.currentTimeMillis();
+    //        List<LiteralList> reducedSample = SampleReducer.reduce(sample, t);
+    //        long end = System.currentTimeMillis();
+    //
+    //        Logger.logInfo("Time: " + ((end - start) / 1000.0));
+    //
+    //        Collections.sort(solutionList1, Comparator.comparing(LiteralList::toString));
+    //        Collections.sort(reducedSample, Comparator.comparing(LiteralList::toString));
+    //
+    //        System.out.println(solutionList1.size());
+    ////        solutionList1.forEach(l -> System.out.println(l.toString()));
+    //        System.out.println(reducedSample.size());
+    ////        reducedSample.forEach(l -> System.out.println(l.toString()));
 }
