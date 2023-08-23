@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Sebastian Krieter
+ * Copyright (C) 2023 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-formula-analysis-sat4j.
  *
@@ -115,11 +115,6 @@ public class SAT4JSolutionSolver extends SAT4JSolver {
                                 new FixedLiteralSelectionStrategy(((InverseFixedStrategy) strategy).getModel()), //
                                 order));
                 break;
-                //            case MIGRandom:
-                //                setSelectionStrategy(new FixedOrderHeap2(
-                //                        new UniformRandomSelectionStrategy(((MIGRandomStrategy) strategy).getDist()),
-                // order));
-                //                break;
             case Negative:
                 setSelectionStrategy(new FixedOrderHeap(new NegativeLiteralSelectionStrategy(), order));
                 break;

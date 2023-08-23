@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Sebastian Krieter
+ * Copyright (C) 2023 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-formula-analysis-sat4j.
  *
@@ -33,6 +33,8 @@ import java.util.List;
  * @author Sebastian Krieter
  */
 public class SampleDistribution extends ALiteralDistribution {
+
+    private static final long serialVersionUID = -3902620512089122369L;
 
     private final ArrayList<ABooleanAssignment> samples = new ArrayList<>();
     private int startIndex;

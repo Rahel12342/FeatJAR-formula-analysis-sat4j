@@ -117,9 +117,6 @@ public class SampleReducerTest {
 	}
 
 	private static void checkCoverage(int t, IComputation<BooleanClauseList> clauses, BooleanSolutionList sample) {
-//        CoverageStatistic statistic = clauses.map(TWiseStatisticGenerator::new)
-//                .set(TWiseStatisticGenerator.SAMPLE, sample)
-//                .set(TWiseStatisticGenerator.T, t).set(TWiseStatisticGenerator.CORE, new BooleanAssignment()).computeResult(false, false).get();
 		long count = LexicographicIterator.<Void>stream(t, sample.get(0).get().size() * 2).map(interaction -> {int[] array = new int[2];
 		array[0] = interaction.elementIndices[0] > sample.get(0).get().size() - 1 ? -(interaction.elementIndices[0] - sample.get(0).get().size() + 1) : interaction.elementIndices[0]+1;
 		array[1] = interaction.elementIndices[1] > sample.get(0).get().size() - 1 ? -(interaction.elementIndices[1] - sample.get(0).get().size() + 1) : interaction.elementIndices[1]+1; return array;})
@@ -138,22 +135,5 @@ public class SampleReducerTest {
     			.count();	
 		System.out.println("Sample size:" + sample.size());
         System.out.println("Sample coverage:" + count);
-//        assertEquals(1.0, statistic.coverage());
     }
-	
-
-    //        Logger.logInfo("Reduce...");
-    //        long start = System.currentTimeMillis();
-    //        List<LiteralList> reducedSample = SampleReducer.reduce(sample, t);
-    //        long end = System.currentTimeMillis();
-    //
-    //        Logger.logInfo("Time: " + ((end - start) / 1000.0));
-    //
-    //        Collections.sort(solutionList1, Comparator.comparing(LiteralList::toString));
-    //        Collections.sort(reducedSample, Comparator.comparing(LiteralList::toString));
-    //
-    //        System.out.println(solutionList1.size());
-    ////        solutionList1.forEach(l -> System.out.println(l.toString()));
-    //        System.out.println(reducedSample.size());
-    ////        reducedSample.forEach(l -> System.out.println(l.toString()));
 }

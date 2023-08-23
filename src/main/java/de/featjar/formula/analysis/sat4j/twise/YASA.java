@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Sebastian Krieter
+ * Copyright (C) 2023 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-formula-analysis-sat4j.
  *
@@ -23,7 +23,6 @@ package de.featjar.formula.analysis.sat4j.twise;
 import de.featjar.base.computation.Computations;
 import de.featjar.base.computation.Dependency;
 import de.featjar.base.computation.IComputation;
-import de.featjar.base.computation.IRandomDependency;
 import de.featjar.base.computation.Progress;
 import de.featjar.base.data.ExpandableIntegerList;
 import de.featjar.base.data.Result;
@@ -64,7 +63,7 @@ import java.util.stream.IntStream;
  *
  * @author Sebastian Krieter
  */
-public class YASA extends ASAT4JAnalysis<BooleanSolutionList> implements IRandomDependency {
+public class YASA extends ASAT4JAnalysis<BooleanSolutionList> {
 
     //    public static class NodeList extends ArrayList<List<BooleanClause>> {
     //        private static final long serialVersionUID = 1L;
@@ -217,7 +216,7 @@ public class YASA extends ASAT4JAnalysis<BooleanSolutionList> implements IRandom
         }
         maxSampleSize = LIMIT.get(dependencyList);
         iterations = ITERATIONS.get(dependencyList);
-        random = RANDOM.get(dependencyList);
+        random = new Random(RANDOM_SEED.get(dependencyList));
 
         solver = initializeSolver(dependencyList);
         mig = MIG.get(dependencyList);

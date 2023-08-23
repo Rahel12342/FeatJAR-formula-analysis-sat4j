@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Sebastian Krieter
+ * Copyright (C) 2023 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-formula-analysis-sat4j.
  *
@@ -57,7 +57,7 @@ public class ComputeCoreDead extends ASAT4JMIGAnalysis<BooleanAssignment> {
     @Override
     public Result<BooleanAssignment> compute(List<Object> dependencyList, Progress progress) {
         SAT4JSolutionSolver solver = initializeSolver(dependencyList);
-        Random random = RANDOM.get(dependencyList);
+        Random random = new Random(RANDOM_SEED.get(dependencyList));
         BooleanAssignment assignment = ASSUMED_ASSIGNMENT.get(dependencyList);
         ABooleanAssignment variablesOfInterest = VARIABLES_OF_INTEREST.get(dependencyList);
         ModalImplicationGraph mig = MIG.get(dependencyList);
