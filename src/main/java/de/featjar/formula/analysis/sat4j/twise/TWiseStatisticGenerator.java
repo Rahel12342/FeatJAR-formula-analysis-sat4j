@@ -127,7 +127,7 @@ public class TWiseStatisticGenerator extends ASAT4JAnalysis<CoverageStatistic> {
             final int t2 = (n < t) ? n : t;
             final int n2 = n - t2 + 1;
             final int pow = (int) Math.pow(2, t2);
-            
+
             boolean[][] masks = new boolean[pow][t2];
             for (int i = 0; i < masks.length; i++) {
                 boolean[] p = masks[i];
@@ -143,7 +143,7 @@ public class TWiseStatisticGenerator extends ASAT4JAnalysis<CoverageStatistic> {
             int[] sampleIndex0 = IntStream.range(0, sampleConfigs.size()).toArray();
             int[] randomIndex0 = IntStream.range(0, GLOBAL_SOLUTION_LIMIT).toArray();
             IntStream.range(0, pow) //
-//                    .parallel() //
+                    //                    .parallel() //
                     .forEach(maskIndex -> {
                         boolean[] mask = new boolean[t2];
                         for (int j = 0; j < t2; j++) {
@@ -257,11 +257,11 @@ public class TWiseStatisticGenerator extends ASAT4JAnalysis<CoverageStatistic> {
             statistic.setNumberOfCoveredConditions(coveredSum);
             statistic.setNumberOfInvalidConditions(invalidSum);
             statistic.setNumberOfUncoveredConditions(uncoveredSum);
-            
+
             System.out.println("Number of covered interactions in sample:" + coveredSum);
             System.out.println("Number of uncovered interactions in sample:" + uncoveredSum);
             System.out.println("Number of invalid interactions in sample:" + invalidSum);
-//            System.out.println(ASAT4JAnalysis.BOOLEAN_CLAUSE_LIST.get(dependencyList));
+            //            System.out.println(ASAT4JAnalysis.BOOLEAN_CLAUSE_LIST.get(dependencyList));
 
             return Result.of(statistic);
         }
